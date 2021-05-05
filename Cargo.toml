@@ -1,7 +1,7 @@
 [package]
-name = "egui_template"
+name = "burnside"
 version = "0.1.0"
-authors = ["Emil Ernerfeldt <emilernerfeldt@gmail.com>"]
+authors = ["Mark Sherry"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,8 +11,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 eframe = "0.11.0" # Gives us egui, epi and web+native backends
-
+image = "0.23"
 serde = { version = "1", features = ["derive"], optional = true }
+bitvec = "0.22"
 
 [features]
 default = []
