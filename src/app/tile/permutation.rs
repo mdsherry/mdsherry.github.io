@@ -64,7 +64,7 @@ impl Permutation {
         }
         new
     }
-    
+
     pub fn vflip(&self, w: usize, h: usize) -> Self {
         let mut new = Self::new();
         for x in 0..w {
@@ -85,7 +85,7 @@ impl Permutation {
         }
         new
     }
-    
+
     pub fn dflip2(&self, w: usize, h: usize) -> Self {
         assert_eq!(w, h);
         let mut new = Self::new();
@@ -97,7 +97,6 @@ impl Permutation {
         new
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -119,7 +118,10 @@ mod test {
         let rot_180 = perm.rotate_180(2, 2);
         assert_eq!(rot_90_90, rot_180);
         let transform = Transforms::new(2, 2, AllowedTransformFamiles::Rotate);
-        assert_eq!(transform.canonicalize(&perm), transform.canonicalize(&rot_180));
+        assert_eq!(
+            transform.canonicalize(&perm),
+            transform.canonicalize(&rot_180)
+        );
         assert_eq!(1, perm.get(0, 0, 2));
         assert_eq!(2, perm.get(1, 0, 2));
         assert_eq!(3, perm.get(0, 1, 2));
@@ -145,10 +147,12 @@ mod test {
         assert_eq!(perm.get(1, 1, 3), 5);
         assert_eq!(perm.get(2, 1, 3), 6);
         let transform = Transforms::new(3, 2, AllowedTransformFamiles::Rotate);
-        assert_eq!(transform.canonicalize(&perm), transform.canonicalize(&rot_180));
+        assert_eq!(
+            transform.canonicalize(&perm),
+            transform.canonicalize(&rot_180)
+        );
     }
 }
-
 
 pub fn build_permutations(
     transforms: &Transforms,
@@ -175,7 +179,16 @@ pub fn build_permutations(
     }
     for colour in 0..n_colours {
         permutation.set(x as usize, y as usize, w as usize, colour as u8);
-        build_permutations(transforms, w, h, n_colours, x + 1, y, permutation.clone(), seen);
+        build_permutations(
+            transforms,
+            w,
+            h,
+            n_colours,
+            x + 1,
+            y,
+            permutation.clone(),
+            seen,
+        );
     }
 }
 
@@ -183,12 +196,16 @@ pub fn build_permutations(
 pub struct Transforms {
     w: u64,
     h: u64,
-    allowed_families: AllowedTransformFamiles
+    allowed_families: AllowedTransformFamiles,
 }
 
 impl Transforms {
     pub fn new(w: u64, h: u64, allowed_families: AllowedTransformFamiles) -> Self {
-        Transforms { w, h, allowed_families }
+        Transforms {
+            w,
+            h,
+            allowed_families,
+        }
     }
 
     pub fn canonicalize(self, perm: &Permutation) -> Permutation {
@@ -196,19 +213,23 @@ impl Transforms {
         let w = self.w as usize;
         let h = self.h as usize;
         let mut canonical = perm.clone();
-        if matches!(self.allowed_families, AllowedTransformFamiles::Rotate | AllowedTransformFamiles::RotateAndFlip) {
+        if matches!(
+            self.allowed_families,
+            AllowedTransformFamiles::Rotate | AllowedTransformFamiles::RotateAndFlip
+        ) {
             if square {
                 canonical = canonical
-                .min(perm.rotate_90(w, h))
-                .min(perm.rotate_270(w, h));
+                    .min(perm.rotate_90(w, h))
+                    .min(perm.rotate_270(w, h));
             }
             canonical = canonical.min(perm.rotate_180(w, h));
         }
-        if matches!(self.allowed_families, AllowedTransformFamiles::RotateAndFlip) {
+        if matches!(
+            self.allowed_families,
+            AllowedTransformFamiles::RotateAndFlip
+        ) {
             if square {
-                canonical = canonical
-                .min(perm.dflip1(w, h))
-                .min(perm.dflip2(w, h));
+                canonical = canonical.min(perm.dflip1(w, h)).min(perm.dflip2(w, h));
             }
             canonical = canonical.min(perm.hflip(w, h));
             canonical = canonical.min(perm.vflip(w, h));

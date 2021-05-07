@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use eframe::egui;
 use super::palettes::Palette;
+use eframe::egui;
 
 mod permutation;
 mod transforms;
-use permutation::{Permutation, Transforms, build_permutations};
+use permutation::{build_permutations, Permutation, Transforms};
 use transforms::*;
 use AllowedTransformFamiles::*;
 
@@ -31,7 +31,9 @@ impl Default for Tile {
     }
 }
 impl Tile {
-    pub fn new() -> Self { Default::default() }
+    pub fn new() -> Self {
+        Default::default()
+    }
     pub fn settings(&mut self, ui: &mut egui::Ui) -> bool {
         let Self {
             height,
@@ -47,7 +49,7 @@ impl Tile {
         let max_height = (max_dimension_product / *width as f64) as u64;
         let max_colours = (64. / (*width * *height) as f64).exp2() as u64;
         ui.heading("Settings");
-        
+
         changed |= ui
             .add(
                 egui::Slider::new(n_colours, 2..=max_colours.min(8))
@@ -70,11 +72,16 @@ impl Tile {
             )
             .changed();
 
-        
         ui.label("Possible transforms:");
-        changed |= ui.radio_value(allowed_xforms, NoTransforms, "No transforms").changed();
-        changed |= ui.radio_value(allowed_xforms, Rotate, "Rotations").changed();
-        changed |= ui.radio_value(allowed_xforms, RotateAndFlip, "Rotation and flip").changed();
+        changed |= ui
+            .radio_value(allowed_xforms, NoTransforms, "No transforms")
+            .changed();
+        changed |= ui
+            .radio_value(allowed_xforms, Rotate, "Rotations")
+            .changed();
+        changed |= ui
+            .radio_value(allowed_xforms, RotateAndFlip, "Rotation and flip")
+            .changed();
 
         ui.label(format!("There are {} distinct tiles", perm_count));
 
@@ -140,17 +147,16 @@ impl Tile {
         } else {
             permutations.clear();
         }
-        
     }
 
     pub fn render_results(&self, palette: &Palette, ui: &mut egui::Ui) {
         let Self {
-            width, 
+            width,
             height,
             perm_count,
             permutations,
             ..
-        }  = self;
+        } = self;
         if *perm_count > 10000 {
             ui.label("Too many (> 10,000) variants to display");
         } else {
@@ -160,18 +166,24 @@ impl Tile {
             }
             ui.horizontal_wrapped(|ui| {
                 for permutation in permutations {
-                    
-                    let (mut rect, _response) = ui.allocate_exact_size(((20 * *width) as f32, (20 * *height) as f32).into(), egui::Sense::hover());
+                    let (mut rect, _response) = ui.allocate_exact_size(
+                        ((20 * *width) as f32, (20 * *height) as f32).into(),
+                        egui::Sense::hover(),
+                    );
                     rect.set_width(20.);
                     rect.set_height(20.);
-                    
+
                     for x in 0..*width {
                         for y in 0..*height {
                             let r = rect.translate((20. * x as f32, 20. * y as f32).into());
-                            ui.painter().rect_filled(r, 2., palette[permutation.get(x as usize, y as usize, *width as usize) as usize]);
-                            
+                            ui.painter().rect_filled(
+                                r,
+                                2.,
+                                palette[permutation.get(x as usize, y as usize, *width as usize)
+                                    as usize],
+                            );
                         }
-                    }                            
+                    }
                 }
             });
         }

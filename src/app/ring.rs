@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::app::ring::permutation::{Transforms, build_permutations, Permutation};
+use crate::app::ring::permutation::{build_permutations, Permutation, Transforms};
 
 use super::palettes::Palette;
 use eframe::egui;
@@ -160,12 +160,10 @@ impl Ring {
             }
             ui.horizontal_wrapped(|ui| {
                 for permutation in permutations {
-                    let (rect, _response) = ui.allocate_exact_size(
-                        (60., 60.).into(),
-                        egui::Sense::hover(),
-                    );
+                    let (rect, _response) =
+                        ui.allocate_exact_size((60., 60.).into(), egui::Sense::hover());
                     let delta = std::f64::consts::TAU / (*n_beads as f64);
-                    let distance = 15.; 
+                    let distance = 15.;
                     let radius = {
                         let x1 = distance;
                         let y1 = 0.;
@@ -173,13 +171,16 @@ impl Ring {
                         let y2 = delta.sin() * distance;
                         ((x1 - x2).powf(2.) + (y1 - y2).powf(2.)).sqrt() / 2.
                     } as f32;
-                    
-                    
+
                     let mut theta: f64 = if *n_beads % 2 == 0 { delta / 2. } else { 0. };
                     for n in 0..*n_beads {
                         let x = theta.sin() * distance;
                         let y = -theta.cos() * distance;
-                        ui.painter().circle_filled(rect.center() + egui::vec2(x as f32, y as f32), radius, palette[permutation.get(n) as usize]);
+                        ui.painter().circle_filled(
+                            rect.center() + egui::vec2(x as f32, y as f32),
+                            radius,
+                            palette[permutation.get(n) as usize],
+                        );
                         theta += delta;
                     }
                 }

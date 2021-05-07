@@ -54,30 +54,46 @@ pub fn build_permutations(
 
     for colour in 0..n_colours {
         permutation.set(n as u64, colour as u8);
-        build_permutations(transforms, n_beads, n_colours, n + 1, permutation.clone(), seen);
+        build_permutations(
+            transforms,
+            n_beads,
+            n_colours,
+            n + 1,
+            permutation.clone(),
+            seen,
+        );
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Transforms {
     n_beads: u64,
-    allowed_families: AllowedTransformFamiles
+    allowed_families: AllowedTransformFamiles,
 }
 
 impl Transforms {
     pub fn new(n_beads: u64, allowed_families: AllowedTransformFamiles) -> Self {
-        Transforms { n_beads, allowed_families }
+        Transforms {
+            n_beads,
+            allowed_families,
+        }
     }
 
     pub fn canonicalize(self, perm: &Permutation) -> Permutation {
         let n_beads = self.n_beads;
         let mut canonical = perm.clone();
-        if matches!(self.allowed_families, AllowedTransformFamiles::Rotate | AllowedTransformFamiles::RotateAndFlip) {
+        if matches!(
+            self.allowed_families,
+            AllowedTransformFamiles::Rotate | AllowedTransformFamiles::RotateAndFlip
+        ) {
             for n in 1..n_beads {
                 canonical = canonical.min(perm.rotate_n(n, n_beads));
             }
         }
-        if matches!(self.allowed_families, AllowedTransformFamiles::RotateAndFlip) {
+        if matches!(
+            self.allowed_families,
+            AllowedTransformFamiles::RotateAndFlip
+        ) {
             let flipped = perm.flip(n_beads);
             canonical = canonical.min(flipped.clone());
             for n in 1..n_beads {

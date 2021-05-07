@@ -90,14 +90,14 @@ pub static H: Palette = [
 
 pub struct PaletteChooser {
     pub choice: &'static Palette,
-    visible: bool
+    visible: bool,
 }
 
 impl PaletteChooser {
     pub fn new() -> Self {
-        PaletteChooser { 
+        PaletteChooser {
             choice: &A,
-            visible: false
+            visible: false,
         }
     }
 
@@ -106,7 +106,8 @@ impl PaletteChooser {
         rect.set_width(20.);
         for i in 0..8 {
             let offset = (20 * i) as f32;
-            ui.painter().rect_filled(rect.translate((offset, 0.).into()), 1., palette[i]);
+            ui.painter()
+                .rect_filled(rect.translate((offset, 0.).into()), 1., palette[i]);
         }
     }
 
@@ -115,44 +116,45 @@ impl PaletteChooser {
     }
 
     pub fn choose(&mut self, ctx: &CtxRef) {
-        let PaletteChooser {
-            visible, choice
-        } = self;
+        let PaletteChooser { visible, choice } = self;
         if *visible {
-            egui::Window::new("Palette picker").open(visible).auto_sized().show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &A, "Palette A");
-                    Self::render_palette(ui, &A);
+            egui::Window::new("Palette picker")
+                .open(visible)
+                .auto_sized()
+                .show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &A, "Palette A");
+                        Self::render_palette(ui, &A);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &B, "Palette B");
+                        Self::render_palette(ui, &B);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &C, "Palette C");
+                        Self::render_palette(ui, &C);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &D, "Palette D");
+                        Self::render_palette(ui, &D);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &E, "Palette E");
+                        Self::render_palette(ui, &E);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &F, "Palette F");
+                        Self::render_palette(ui, &F);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &G, "Palette G");
+                        Self::render_palette(ui, &G);
+                    });
+                    ui.horizontal(|ui| {
+                        ui.radio_value(choice, &H, "Palette H");
+                        Self::render_palette(ui, &H);
+                    });
                 });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &B, "Palette B");
-                    Self::render_palette(ui, &B);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &C, "Palette C");
-                    Self::render_palette(ui, &C);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &D, "Palette D");
-                    Self::render_palette(ui, &D);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &E, "Palette E");
-                    Self::render_palette(ui, &E);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &F, "Palette F");
-                    Self::render_palette(ui, &F);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &G, "Palette G");
-                    Self::render_palette(ui, &G);
-                });
-                ui.horizontal(|ui| {
-                    ui.radio_value(choice, &H, "Palette H");
-                    Self::render_palette(ui, &H);
-                });
-            });
         }
     }
 }

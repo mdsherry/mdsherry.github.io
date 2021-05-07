@@ -1,7 +1,4 @@
-use eframe::{
-    egui,
-    epi,
-};
+use eframe::{egui, epi};
 
 mod about;
 mod palettes;
@@ -9,8 +6,8 @@ mod ring;
 mod tile;
 use self::palettes::PaletteChooser;
 use about::About;
-use tile::Tile;
 use ring::Ring;
+use tile::Tile;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SelectedMode {
@@ -101,16 +98,14 @@ impl epi::App for BurnsideApp {
         if changed {
             match *mode {
                 SelectedMode::Tile => tile.recompute_perms(),
-                SelectedMode::Ring => ring.recompute_perms(),                
+                SelectedMode::Ring => ring.recompute_perms(),
             }
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::auto_sized().show(ui, |ui| {
-                match *mode {
-                    SelectedMode::Tile => tile.render_results(palette.choice, ui),
-                    SelectedMode::Ring => ring.render_results(palette.choice, ui)
-                }
+            egui::ScrollArea::auto_sized().show(ui, |ui| match *mode {
+                SelectedMode::Tile => tile.render_results(palette.choice, ui),
+                SelectedMode::Ring => ring.render_results(palette.choice, ui),
             });
         });
     }

@@ -2,7 +2,7 @@
 pub enum AllowedTransformFamiles {
     NoTransforms,
     Rotate,
-    RotateAndFlip
+    RotateAndFlip,
 }
 use AllowedTransformFamiles::*;
 
@@ -68,7 +68,6 @@ mod test {
         assert_eq!(Rot180::base_fixed(2, 3), 3);
         assert_eq!(Rot180::base_fixed(3, 3), 5);
         assert_eq!(Rot180::base_fixed(4, 4), 8);
-        
     }
 }
 
@@ -85,7 +84,7 @@ impl Transform for Rot180 {
             // Odd, so the center doesn't move at all
             (h / 2) * w + w / 2 + 1
         } else {
-            w * h  / 2
+            w * h / 2
         }
     }
 }
@@ -99,12 +98,9 @@ impl Transform for HFlip {
     }
 
     fn base_fixed(w: u64, h: u64) -> u64 {
-        
         h * (w / 2 + (w & 1))
     }
-
 }
-
 
 pub struct VFlip;
 impl Transform for VFlip {
@@ -118,7 +114,6 @@ impl Transform for VFlip {
         w * (h / 2 + (h & 1))
     }
 }
-
 
 pub struct DFlip;
 impl Transform for DFlip {
