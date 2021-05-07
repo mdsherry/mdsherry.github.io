@@ -9,6 +9,8 @@ use about::About;
 use ring::Ring;
 use tile::Tile;
 
+mod downloader;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SelectedMode {
     Tile,

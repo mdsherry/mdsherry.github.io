@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use crate::app::downloader::make_download;
+
 use super::palettes::Palette;
 use eframe::egui;
 
@@ -164,6 +166,11 @@ impl Tile {
                 let message = format!("Error: Expected to find {} results, but found {} instead. Please report this as a bug to mdsherry@gmail.com", *perm_count, permutations.len());
                 ui.colored_label(egui::Color32::from_rgb(255, 0, 0), message);
             }
+            
+            if cfg!(target_arch = "wasm32") && ui.button("Download JSON").clicked() {
+                let (name, bytes) = self.export_json();
+                make_download(&name, &bytes, "application/json");
+            }
             ui.horizontal_wrapped(|ui| {
                 for permutation in permutations {
                     let (mut rect, _response) = ui.allocate_exact_size(
@@ -187,5 +194,24 @@ impl Tile {
                 }
             });
         }
+    }
+
+    pub fn export_json(&self) -> (String, Vec<u8>) {
+        let Self { width, height, n_colours, allowed_xforms, permutations, ..} = self;
+        let mut rv = vec![];
+        for permutation in permutations {
+            let mut entry = vec![];
+            for y in 0..*height {
+                let mut row = vec![];
+                for x in 0..*width {
+                    row.push(permutation.get(y as usize, x as usize, *width as usize));
+                }
+                entry.push(row);
+            }
+            rv.push(entry)
+        }
+        let name = format!("{}x{} {} col {:?}.json", width, height, n_colours, allowed_xforms);
+        let bytes =serde_json::to_vec(&rv).unwrap();
+        (name, bytes)
     }
 }

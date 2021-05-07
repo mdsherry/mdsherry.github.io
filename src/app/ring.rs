@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::app::ring::permutation::{build_permutations, Permutation, Transforms};
+use crate::app::{downloader::make_download, ring::permutation::{build_permutations, Permutation, Transforms}};
 
 use super::palettes::Palette;
 use eframe::egui;
@@ -158,6 +158,10 @@ impl Ring {
                 let message = format!("Error: Expected to find {} results, but found {} instead. Please report this as a bug to mdsherry@gmail.com", *perm_count, permutations.len());
                 ui.colored_label(egui::Color32::from_rgb(255, 0, 0), message);
             }
+            if cfg!(target_arch = "wasm32") && ui.button("Download JSON").clicked() {
+                let (name, bytes) = self.export_json();
+                make_download(&name, &bytes, "application/json");
+            }
             ui.horizontal_wrapped(|ui| {
                 for permutation in permutations {
                     let (rect, _response) =
@@ -186,6 +190,20 @@ impl Ring {
                 }
             });
         }
+    }
+    pub fn export_json(&self) -> (String, Vec<u8>) {
+        let Self { n_beads, n_colours, allowed_xforms, permutations, ..} = self;
+        let mut rv = vec![];
+        for permutation in permutations {
+            let mut entry = vec![];
+            for y in 0..*n_beads {
+                entry.push(permutation.get(y));
+            }
+            rv.push(entry)
+        }
+        let name = format!("{} beads {} col {:?}.json", n_beads, n_colours, allowed_xforms);
+        let bytes =serde_json::to_vec(&rv).unwrap();
+        (name, bytes)
     }
 }
 
