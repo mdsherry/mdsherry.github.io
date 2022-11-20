@@ -461,6 +461,7 @@ mod test {
     // }
 
     #[test]
+    #[cfg_attr(not(slow_tests), ignore = "Skipping slow tests")]
     fn test_ring_limited() {
         for xform in [
             AllowedTransformFamiles::NoTransforms,
@@ -498,6 +499,7 @@ mod test {
     }
 
     #[test]
+    #[cfg_attr(not(slow_tests), ignore = "Skipping slow tests")]
     fn test_ring_unlimited() {
         for xform in [
             AllowedTransformFamiles::NoTransforms,
