@@ -1,5 +1,16 @@
+use std::sync::Mutex;
+
+use eframe::epaint::ahash::HashMap;
+use once_cell::sync::Lazy;
+type DrawCache = HashMap<(u64, u64, u64), u64>;
+static DRAW_CACHE: Lazy<Mutex<DrawCache>> = Lazy::new(|| Default::default());
+
 pub fn simple_count(draws: u64, n_colours: u64, each_count: u64) -> u64 {
-    count(draws, &mut vec![each_count as u8; n_colours as usize])
+    *DRAW_CACHE
+        .lock()
+        .unwrap()
+        .entry((draws, n_colours, each_count))
+        .or_insert_with(|| count(draws, &mut vec![each_count as u8; n_colours as usize]))
 }
 
 fn count(draws: u64, left: &mut [u8]) -> u64 {
