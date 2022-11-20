@@ -104,6 +104,7 @@ impl PaletteChooser {
     fn render_palette(ui: &mut Ui, palette: &Palette) {
         let (mut rect, _response) = ui.allocate_exact_size((160., 20.).into(), Sense::hover());
         rect.set_width(20.);
+        #[allow(clippy::needless_range_loop)]
         for i in 0..8 {
             let offset = (20 * i) as f32;
             ui.painter()

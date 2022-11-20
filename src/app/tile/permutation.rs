@@ -154,6 +154,7 @@ mod test {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_permutations(
     transforms: &Transforms,
     w: u64,
@@ -161,6 +162,8 @@ pub fn build_permutations(
     n_colours: u64,
     mut x: u64,
     mut y: u64,
+    colour_counts: &mut [u64],
+    colour_limit: u64,
     mut permutation: Permutation,
     seen: &mut HashSet<Permutation>,
 ) {
@@ -178,17 +181,23 @@ pub fn build_permutations(
         panic!("Out of bounds! {}/{} {}/{}", x, w, y, h);
     }
     for colour in 0..n_colours {
-        permutation.set(x as usize, y as usize, w as usize, colour as u8);
-        build_permutations(
-            transforms,
-            w,
-            h,
-            n_colours,
-            x + 1,
-            y,
-            permutation.clone(),
-            seen,
-        );
+        colour_counts[colour as usize] += 1;
+        if colour_counts[colour as usize] <= colour_limit {
+            permutation.set(x as usize, y as usize, w as usize, colour as u8);
+            build_permutations(
+                transforms,
+                w,
+                h,
+                n_colours,
+                x + 1,
+                y,
+                colour_counts,
+                colour_limit,
+                permutation.clone(),
+                seen,
+            );
+        }
+        colour_counts[colour as usize] -= 1;
     }
 }
 

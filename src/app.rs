@@ -1,6 +1,7 @@
 use eframe::{egui, epi};
 
 mod about;
+mod bag_draw;
 mod palettes;
 mod ring;
 mod tile;

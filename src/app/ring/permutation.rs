@@ -38,12 +38,15 @@ impl Permutation {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_permutations(
     transforms: &Transforms,
     n_beads: u64,
     n_colours: u64,
     n: u64,
     mut permutation: Permutation,
+    colour_counts: &mut [u64],
+    colour_limit: u64,
     seen: &mut HashSet<Permutation>,
 ) {
     if n == n_beads {
@@ -54,14 +57,20 @@ pub fn build_permutations(
 
     for colour in 0..n_colours {
         permutation.set(n as u64, colour as u8);
-        build_permutations(
-            transforms,
-            n_beads,
-            n_colours,
-            n + 1,
-            permutation.clone(),
-            seen,
-        );
+        colour_counts[colour as usize] += 1;
+        if colour_counts[colour as usize] <= colour_limit {
+            build_permutations(
+                transforms,
+                n_beads,
+                n_colours,
+                n + 1,
+                permutation.clone(),
+                colour_counts,
+                colour_limit,
+                seen,
+            );
+        }
+        colour_counts[colour as usize] -= 1;
     }
 }
 
