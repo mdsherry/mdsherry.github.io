@@ -6,13 +6,13 @@ use super::AllowedTransformFamiles;
 
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct Permutation {
-    value: BitArr!(for 30, in Msb0, u32),
+    value: BitArr!(for 30, in u32, Msb0),
 }
 
 impl Permutation {
     pub fn new() -> Self {
         Self {
-            value: bitarr![Msb0, u32; 0; 30],
+            value: bitarr![u32, Msb0; 0; 30],
         }
     }
     pub fn get(&self, n: u64) -> u8 {

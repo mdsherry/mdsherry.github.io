@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, CtxRef, Sense, Ui};
+use eframe::egui::{self, Color32, Sense, Ui, Context};
 pub type Palette = [Color32; 8];
 pub static A: Palette = [
     Color32::from_rgb(127, 201, 127),
@@ -116,7 +116,7 @@ impl PaletteChooser {
         self.visible = true;
     }
 
-    pub fn choose(&mut self, ctx: &CtxRef) {
+    pub fn choose(&mut self, ctx: &Context) {
         let PaletteChooser { visible, choice } = self;
         if *visible {
             egui::Window::new("Palette picker")

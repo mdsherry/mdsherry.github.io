@@ -10,8 +10,8 @@ impl About {
     pub fn open(&mut self) {
         self.open = true;
     }
-    pub fn show(&mut self, ctx: &egui::CtxRef) {
-        egui::Window::new("Help / About").open(&mut self.open).default_width(400.).scroll(true).show(ctx, |ui| {
+    pub fn show(&mut self, ctx: &egui::Context) {
+        egui::Window::new("Help / About").open(&mut self.open).default_width(400.).vscroll(true).show(ctx, |ui| {
             ui.label("Burnside Generator");
             ui.label("Mark Sherry © 2021");
             ui.separator();
