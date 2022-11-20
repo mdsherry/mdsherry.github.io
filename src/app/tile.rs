@@ -16,6 +16,8 @@ pub struct Tile {
     width: u64,
     height: u64,
     allowed_xforms: AllowedTransformFamiles,
+    limit_repeats: bool,
+    max_repeats: u64,
     perm_count: u64,
     permutations: Vec<Permutation>,
 }
@@ -26,6 +28,8 @@ impl Default for Tile {
             n_colours: 3,
             width: 2,
             height: 2,
+            limit_repeats: false,
+            max_repeats: 2,
             allowed_xforms: Rotate,
             perm_count: 0,
             permutations: vec![],
@@ -41,6 +45,8 @@ impl Tile {
             height,
             width,
             n_colours,
+            limit_repeats,
+            max_repeats,
             allowed_xforms,
             perm_count,
             ..
@@ -50,6 +56,9 @@ impl Tile {
         let max_width = (max_dimension_product / *height as f64) as u64;
         let max_height = (max_dimension_product / *width as f64) as u64;
         let max_colours = (64. / (*width * *height) as f64).exp2() as u64;
+        let max_max_repeats = *width * *height;
+        let min_max_repeats = (max_max_repeats + *n_colours - 1) / *n_colours;
+
         ui.heading("Settings");
 
         changed |= ui
@@ -73,7 +82,26 @@ impl Tile {
                     .clamp_to_range(true),
             )
             .changed();
-
+        changed |= ui
+            .checkbox(limit_repeats, "Limit colour repetions")
+            .changed();
+        if *limit_repeats {
+            if *max_repeats < min_max_repeats {
+                changed = true;
+                *max_repeats = min_max_repeats;
+            }
+            if *max_repeats > max_max_repeats {
+                changed = true;
+                *max_repeats = max_max_repeats;
+            }
+            changed |= ui
+                .add(
+                    egui::Slider::new(max_repeats, min_max_repeats..=max_max_repeats)
+                        .text("Maximum repeats")
+                        .clamp_to_range(true),
+                )
+                .changed();
+        }
         ui.label("Possible transforms:");
         changed |= ui
             .radio_value(allowed_xforms, NoTransforms, "No transforms")
@@ -96,6 +124,8 @@ impl Tile {
             width,
             height,
             n_colours,
+            limit_repeats,
+            max_repeats,
             perm_count,
             permutations,
             ..
@@ -105,27 +135,51 @@ impl Tile {
         let mut fixed = 0;
         if NoXform::applicable(*allowed_xforms, square) {
             orbits += NoXform::ORBITS;
-            fixed += NoXform::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                NoXform::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                NoXform::total_fixed(*width, *height, *n_colours)
+            };
         }
         if Rot90::applicable(*allowed_xforms, square) {
             orbits += Rot90::ORBITS;
-            fixed += Rot90::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                Rot90::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                Rot90::total_fixed(*width, *height, *n_colours)
+            };
         }
         if Rot180::applicable(*allowed_xforms, square) {
             orbits += Rot180::ORBITS;
-            fixed += Rot180::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                Rot180::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                Rot180::total_fixed(*width, *height, *n_colours)
+            };
         }
         if HFlip::applicable(*allowed_xforms, square) {
             orbits += HFlip::ORBITS;
-            fixed += HFlip::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                HFlip::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                HFlip::total_fixed(*width, *height, *n_colours)
+            };
         }
         if VFlip::applicable(*allowed_xforms, square) {
             orbits += VFlip::ORBITS;
-            fixed += VFlip::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                VFlip::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                VFlip::total_fixed(*width, *height, *n_colours)
+            };
         }
         if DFlip::applicable(*allowed_xforms, square) {
             orbits += DFlip::ORBITS;
-            fixed += DFlip::total_fixed(*width, *height, *n_colours);
+            fixed += if *limit_repeats {
+                DFlip::limited_total_fixed(*width, *height, *n_colours, *max_repeats)
+            } else {
+                DFlip::total_fixed(*width, *height, *n_colours)
+            };
         }
 
         *perm_count = fixed / orbits;
@@ -133,6 +187,7 @@ impl Tile {
         let transforms = Transforms::new(*width, *height, *allowed_xforms);
         if *perm_count <= 10000 {
             let mut seen = HashSet::with_capacity(*perm_count as usize);
+            let mut colour_counts = vec![0; *n_colours as usize];
             build_permutations(
                 &transforms,
                 *width,
@@ -140,6 +195,12 @@ impl Tile {
                 *n_colours,
                 0,
                 0,
+                &mut colour_counts,
+                if *limit_repeats {
+                    *max_repeats
+                } else {
+                    u64::MAX
+                },
                 Permutation::new(),
                 &mut seen,
             );
@@ -166,7 +227,7 @@ impl Tile {
                 let message = format!("Error: Expected to find {} results, but found {} instead. Please report this as a bug to mdsherry@gmail.com", *perm_count, permutations.len());
                 ui.colored_label(egui::Color32::from_rgb(255, 0, 0), message);
             }
-            
+
             if cfg!(target_arch = "wasm32") && ui.button("Download JSON").clicked() {
                 let (name, bytes) = self.export_json();
                 make_download(&name, &bytes, "application/json");
@@ -197,7 +258,14 @@ impl Tile {
     }
 
     pub fn export_json(&self) -> (String, Vec<u8>) {
-        let Self { width, height, n_colours, allowed_xforms, permutations, ..} = self;
+        let Self {
+            width,
+            height,
+            n_colours,
+            allowed_xforms,
+            permutations,
+            ..
+        } = self;
         let mut rv = vec![];
         for permutation in permutations {
             let mut entry = vec![];
@@ -210,8 +278,11 @@ impl Tile {
             }
             rv.push(entry)
         }
-        let name = format!("{}x{} {} col {:?}.json", width, height, n_colours, allowed_xforms);
-        let bytes =serde_json::to_vec(&rv).unwrap();
+        let name = format!(
+            "{}x{} {} col {:?}.json",
+            width, height, n_colours, allowed_xforms
+        );
+        let bytes = serde_json::to_vec(&rv).unwrap();
         (name, bytes)
     }
 }

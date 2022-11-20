@@ -6,13 +6,13 @@ use super::AllowedTransformFamiles;
 
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct Permutation {
-    value: BitArr!(for 30, in Msb0, u32),
+    value: BitArr!(for 30, in u32, Msb0),
 }
 
 impl Permutation {
     pub fn new() -> Self {
         Self {
-            value: bitarr![Msb0, u32; 0; 30],
+            value: bitarr![u32, Msb0; 0; 30],
         }
     }
     pub fn get(&self, n: u64) -> u8 {
@@ -38,12 +38,15 @@ impl Permutation {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_permutations(
     transforms: &Transforms,
     n_beads: u64,
     n_colours: u64,
     n: u64,
     mut permutation: Permutation,
+    colour_counts: &mut [u64],
+    colour_limit: u64,
     seen: &mut HashSet<Permutation>,
 ) {
     if n == n_beads {
@@ -54,14 +57,20 @@ pub fn build_permutations(
 
     for colour in 0..n_colours {
         permutation.set(n as u64, colour as u8);
-        build_permutations(
-            transforms,
-            n_beads,
-            n_colours,
-            n + 1,
-            permutation.clone(),
-            seen,
-        );
+        colour_counts[colour as usize] += 1;
+        if colour_counts[colour as usize] <= colour_limit {
+            build_permutations(
+                transforms,
+                n_beads,
+                n_colours,
+                n + 1,
+                permutation.clone(),
+                colour_counts,
+                colour_limit,
+                seen,
+            );
+        }
+        colour_counts[colour as usize] -= 1;
     }
 }
 

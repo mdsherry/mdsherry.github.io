@@ -1,6 +1,7 @@
-use eframe::{egui, epi};
+use eframe::egui;
 
 mod about;
+mod bag_draw;
 mod palettes;
 mod ring;
 mod tile;
@@ -27,6 +28,15 @@ pub struct BurnsideApp {
     about: About,
 }
 
+impl BurnsideApp {
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+        // This is also where you can customized the look at feel of egui using
+        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
+
+        Default::default()
+    }
+}
+
 impl Default for BurnsideApp {
     fn default() -> Self {
         Self {
@@ -39,11 +49,7 @@ impl Default for BurnsideApp {
     }
 }
 
-impl epi::App for BurnsideApp {
-    fn name(&self) -> &str {
-        "Burnside Calculator"
-    }
-
+impl eframe::App for BurnsideApp {
     /// Called by the framework to load old app state (if any).
     #[cfg(feature = "persistence")]
     fn load(&mut self, storage: &dyn epi::Storage) {
@@ -58,7 +64,7 @@ impl epi::App for BurnsideApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let BurnsideApp {
             mode,
             tile,
@@ -67,28 +73,29 @@ impl epi::App for BurnsideApp {
             about,
         } = self;
 
-        egui::TopPanel::top("top_panel").show(ctx, |ui| {
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
-                if !cfg!(target_arch = "wasm32") {
-                    egui::menu::menu(ui, "File", |ui| {
+                egui::menu::bar(ui, |ui| {
+                    #[cfg(not(target_arch = "wasm32"))]
+                    ui.menu_button("File", |ui| {
                         if ui.button("Quit").clicked() {
-                            frame.quit();
+                            _frame.close();
                         }
                     });
-                }
-                if ui.button("Palette").clicked() {
-                    palette.open();
-                }
-                if ui.button("Help / about").clicked() {
-                    about.open();
-                }
+                    if ui.button("Palette").clicked() {
+                        palette.open();
+                    }
+                    if ui.button("Help / about").clicked() {
+                        about.open();
+                    }
+                });
             });
         });
         palette.choose(ctx);
         about.show(ctx);
         let mut changed = false;
-        egui::SidePanel::left("side_panel", 200.0).show(ctx, |ui| {
+        egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.radio_value(mode, SelectedMode::Tile, "Tiles");
             ui.radio_value(mode, SelectedMode::Ring, "Rings");
             changed = match mode {
@@ -105,10 +112,12 @@ impl epi::App for BurnsideApp {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::auto_sized().show(ui, |ui| match *mode {
-                SelectedMode::Tile => tile.render_results(palette.choice, ui),
-                SelectedMode::Ring => ring.render_results(palette.choice, ui),
-            });
+            egui::ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| match *mode {
+                    SelectedMode::Tile => tile.render_results(palette.choice, ui),
+                    SelectedMode::Ring => ring.render_results(palette.choice, ui),
+                });
         });
     }
 }
