@@ -50,7 +50,6 @@ impl Default for BurnsideApp {
 }
 
 impl eframe::App for BurnsideApp {
-
     /// Called by the framework to load old app state (if any).
     #[cfg(feature = "persistence")]
     fn load(&mut self, storage: &dyn epi::Storage) {
@@ -73,11 +72,10 @@ impl eframe::App for BurnsideApp {
             palette,
             about,
         } = self;
-        
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
-                
                 egui::menu::bar(ui, |ui| {
                     #[cfg(not(target_arch = "wasm32"))]
                     ui.menu_button("File", |ui| {
@@ -92,8 +90,6 @@ impl eframe::App for BurnsideApp {
                         about.open();
                     }
                 });
-            
-                
             });
         });
         palette.choose(ctx);
@@ -116,10 +112,12 @@ impl eframe::App for BurnsideApp {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| match *mode {
-                SelectedMode::Tile => tile.render_results(palette.choice, ui),
-                SelectedMode::Ring => ring.render_results(palette.choice, ui),
-            });
+            egui::ScrollArea::vertical()
+                .auto_shrink([false; 2])
+                .show(ui, |ui| match *mode {
+                    SelectedMode::Tile => tile.render_results(palette.choice, ui),
+                    SelectedMode::Ring => ring.render_results(palette.choice, ui),
+                });
         });
     }
 }

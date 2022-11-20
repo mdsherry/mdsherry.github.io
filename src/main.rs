@@ -6,7 +6,11 @@
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let native_options = eframe::NativeOptions::default();
-    eframe::run_native("Burnside Calculator", native_options, Box::new(|cc| Box::new(burnside::BurnsideApp::new(cc))));
+    eframe::run_native(
+        "Burnside Calculator",
+        native_options,
+        Box::new(|cc| Box::new(burnside::BurnsideApp::new(cc))),
+    );
 }
 
 #[cfg(target_arch = "wasm32")]

@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, Sense, Ui, Context};
+use eframe::egui::{self, Color32, Context, Sense, Ui};
 pub type Palette = [Color32; 8];
 pub static A: Palette = [
     Color32::from_rgb(127, 201, 127),
